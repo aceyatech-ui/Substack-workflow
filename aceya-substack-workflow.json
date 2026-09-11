@@ -1,0 +1,227 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "523d838e-8148-4474-ab17-20d7eeb48481",
+      "name": "1. Start Workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        64
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "topic",
+              "value": "={{ $json.topic }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "95cefa90-f1f5-467a-bb62-433e597abbb0",
+      "name": "2. Set Topic & Constraints",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        240,
+        64
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Write a Substack article based on the topic below.\n\nTopic: {{ $json.topic }}\n\nRequirements:\n1. Craft an intriguing title and subtitle.\n2. Hook the reader with a vivid, relatable story or analogy about business efficiency.\n3. Discuss the core concepts of the topic in an insightful way without giving away the step-by-step \"how-to\" implementation.\n4. Naturally weave in how custom automation, Python scripts, or web applications (built by Aceya Systems) solve this problem.\n5. End with a compelling call-to-action inviting them to read future posts and visit https://www.aceyasystems.com.ng.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert ghostwriter and storyteller crafting engaging Substack articles for Aceya Systems (https://www.aceyasystems.com.ng). \n\nTone & Style Guidelines:\n- Writing style: Warm, highly readable, engaging, and humanized.\n- Tone: Storyteller meets strategic advisor.\n- Strictly NO em-dashes (—). Use light punctuation or short sentences instead.\n- Content rule: Tease the concepts and share valuable high-level insights, but never reveal the complete step-by-step technical execution. Leave the reader wanting to learn more by checking future articles or reaching out.\n\nCompany Context:\nAceya Systems is a specialized automation agency. We build AI automations, business workflows, custom Python automations, websites, and custom web applications."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        464,
+        64
+      ],
+      "id": "6e1e54bb-5d23-4cac-9431-ec694d8dda8e",
+      "name": "AI Agent",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.6-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        472,
+        288
+      ],
+      "id": "3f6de39d-6421-425c-9406-e7613ffa8bf7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "REPLACE_WITH_YOUR_GOOGLE_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"title\": \"Article Title Here\",\n  \"subtitle\": \"Article Subtitle Here\",\n  \"body\": \"Article body content here...\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        600,
+        288
+      ],
+      "id": "c1cf9f9b-a977-4cec-83e3-bbc6fec8da50",
+      "name": "Structured Output Parser",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "chatId": "REPLACE_WITH_YOUR_TELEGRAM_CHAT_ID",
+        "text": "=<b>{{ $json.title }}</b> <i>{{ $json.subtitle }}</i>  {{ $json.body }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        64
+      ],
+      "id": "a61cd92d-35d4-43c3-b885-993329e057f8",
+      "name": "Send a text message",
+      "webhookId": "REPLACE_WITH_GENERATED_WEBHOOK_ID",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output;\n\nreturn {\n  title: output.title,\n  subtitle: output.subtitle,\n  body: output.body,\n  full_text: `${output.title}\\n\\n${output.subtitle}\\n\\n${output.body}`\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        64
+      ],
+      "id": "4900cfd5-6d19-4a20-91a1-9cf5dbe9baec",
+      "name": "Parser",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const topics = [\n  \"n8n vs Zapier for founders automating lead generation\",\n  \"How AI agents are quietly replacing traditional SaaS tools\",\n  \"Why custom Python scripts beat no-code tools for scale\",\n  \"How to automate your cold email outreach with AI without spamming\",\n  \"Building custom web apps vs using off-the-shelf software\",\n  \"5 manual tasks every service agency should automate today\",\n  \"How small businesses can leverage LLMs for instant customer support\",\n  \"The true cost of bad workflows in growing startups\",\n  \"How to build an automated content repurposing engine\",\n  \"Why your business needs a custom dashboard, not 10 open tabs\",\n  \"Automating client onboarding: From contract signed to kick-off\",\n  \"How AI workflows can auto-qualify inbound sales leads\",\n  \"Stop paying monthly fees: Transitioning from Zapier to n8n\",\n  \"How custom web applications give local businesses an unfair advantage\",\n  \"How to scrape lead data ethically using Python\",\n  \"Integrating OpenAI into your existing database architecture\",\n  \"The blueprint for a zero-touch e-commerce fulfillment workflow\",\n  \"Why off-the-shelf CRM solutions fail high-growth startups\",\n  \"How to automate invoice collection and payment follow-ups\",\n  \"Building internal AI tools for your operations team\",\n  \"How to turn static PDF reports into dynamic web dashboards\",\n  \"Automating social media distribution across platforms with n8n\",\n  \"Why your next software build should be a custom WebApp\",\n  \"How custom AI agents optimize operational efficiency\",\n  \"The rise of automated workflow engines in modern business\",\n  \"Replacing manual data entry with vision AI models\",\n  \"How to connect legacy SQL databases with modern AI tools\",\n  \"Automating customer sentiment analysis for product feedback\",\n  \"Why no-code automation hits a ceiling at 10,000 requests/month\",\n  \"How to build an AI draft generator for your newsletter\",\n  \"Streamlining HR onboarding using automated form processors\",\n  \"How web scraping automation accelerates competitor analysis\",\n  \"Why custom software pays for itself in under six months\",\n  \"Automating multi-channel messaging: WhatsApp, Telegram, and Email\",\n  \"How AI agents reduce human error in supply chain tracking\",\n  \"Building custom WebAPIs to bridge disconnected software systems\",\n  \"How to build a self-updating knowledge base with AI\",\n  \"Automating client reporting without touching Google Sheets\",\n  \"Why agencies should stop building manually and start templating\",\n  \"How custom WebApps streamline multi-user permission workflows\",\n  \"Unlocking hidden productivity with Python automation scripts\",\n  \"How AI agents handle tier-1 tech support tickets automatically\",\n  \"Integrating Stripe webhooks with n8n for real-time revenue alerts\",\n  \"Why off-the-shelf software restricts business growth potential\",\n  \"Automating lead enrichment with web scraping and AI evaluation\",\n  \"Building custom WebApps for booking and scheduling optimization\",\n  \"How to eliminate duplicate data across your tech stack automatically\",\n  \"Why AI workflows are replacing traditional virtual assistants\",\n  \"Custom software vs off-the-shelf: Knowing when to make the leap\",\n  \"How Aceya Systems crafts tailor-made automation for growing brands\"\n];\n\n// Pick one random topic from the array\nconst randomTopic = topics[Math.floor(Math.random() * topics.length)];\n\nreturn {\n  topic: randomTopic\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        64
+      ],
+      "id": "72b3f871-8602-49f1-b0fe-881593d7e64a",
+      "name": "Topic options",
+      "alwaysOutputData": true
+    }
+  ],
+  "connections": {
+    "1. Start Workflow": {
+      "main": [
+        [
+          {
+            "node": "Topic options",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Set Topic & Constraints": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Topic options": {
+      "main": [
+        [
+          {
+            "node": "2. Set Topic & Constraints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "REPLACE_WITH_YOUR_N8N_INSTANCE_ID"
+  }
+}
